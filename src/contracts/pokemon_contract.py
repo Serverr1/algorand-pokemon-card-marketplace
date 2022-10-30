@@ -41,6 +41,7 @@ class Card:
             Approve(),
         ])
 
+  # others users can buy a pokemon card
     def buy(self):
             valid_number_of_transactions = Global.group_size() == Int(2)
 
@@ -107,21 +108,18 @@ class Card:
         ])
 
 
-    # To delete a picture.
+    # delete a pokemon card .
     def application_deletion(self):
         return Return(Txn.sender() == Global.creator_address())
 
     # Check transaction conditions
     def application_start(self):
         return Cond(
-            # checks if the application_id field of a transaction matches 0.
-            # If this is the case, the application does not exist yet, and the application_creation() method is called
             [Txn.application_id() == Int(0), self.application_creation()],
             # If the the OnComplete action of the transaction is DeleteApplication, the application_deletion() method is called
             [Txn.on_completion() == OnComplete.DeleteApplication,
              self.application_deletion()],
             # if the first argument of the transaction matches the AppMethods.buy value, the buy() method is called.
-            
             [Txn.application_args[0] == self.AppMethods.buy, self.buy()],
             [Txn.application_args[0] == self.AppMethods.transferownership, self.transferownership()],
             [Txn.application_args[0] == self.AppMethods.togglesale, self.togglesale()],
