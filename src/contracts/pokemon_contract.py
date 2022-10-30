@@ -5,6 +5,7 @@ class Card:
     class Variables:
         name = Bytes("NAME")
         image = Bytes("IMAGE")
+        owner = Bytes("OWNER")
         attributes = Bytes("ATTRIBUTES") 
         price = Bytes("PRICE")
         isforsale = Bytes("ISFORSALE")
@@ -37,26 +38,27 @@ class Card:
             App.globalPut(self.Variables.attributes, Txn.application_args[2]),
             App.globalPut(self.Variables.price, Btoi(Txn.application_args[3])),
             App.globalPut(self.Variables.isforsale, Int(1)),
-
+            App.globalPut(self.Variables.owner, Txn.sender()),
             Approve(),
         ])
 
   # others users can buy a pokemon card
     def buy(self):
             valid_number_of_transactions = Global.group_size() == Int(2)
-
+            owner = App.globalGet(self.Variables.owner)
             valid_payment_to_seller = And(
                 Gtxn[1].type_enum() == TxnType.Payment,
-                Gtxn[1].receiver() == Global.creator_address(),
+                Gtxn[1].receiver() == owner,
                 Gtxn[1].amount() == App.globalGet(self.Variables.price),
                 Gtxn[1].sender() == Gtxn[0].sender(),
+                Gtxn[1].sender() != owner
             )
 
-            can_buy = And(valid_number_of_transactions,
-                        valid_payment_to_seller)
+            can_buy = And(App.globalGet(self.Variables.isforsale) == Int(1),valid_number_of_transactions,valid_payment_to_seller)
 
             update_state = Seq([
-                Global.creator_address == Txn.sender(),
+                App.globalPut(self.Variables.owner, Txn.sender()),
+                App.globalPut(self.Variables.isforsale, Int(0)),
                 Approve()
             ])
 
@@ -68,14 +70,13 @@ class Card:
     def transferownership(self):
         Assert(
             And(
-                    Global.group_size() == Int(1),
-                    Txn.sender() == Global.creator_address(),
-                    Txn.applications.length() == Int(1),
+                    Txn.sender() == App.globalGet(self.Variables.owner),
                     Txn.application_args.length() == Int(2),
             ),
         ),
         return Seq([
-            App.globalPut(Global.creator_address, Txn.application_args[2]),
+            App.globalPut(self.Variables.owner, Txn.application_args[1]),
+            If(App.globalGet(self.Variables.isforsale) == Int(1)).Then(App.globalPut(self.Variables.isforsale, Int(0))),
             Approve()
         ])
 
@@ -85,8 +86,8 @@ class Card:
         Assert(
             And(
                 Txn.application_args.length() == Int(1),
-                Txn.sender() == Global.creator_address(),
-                App.globalGet(self.Variables.forsale) == Int(1),
+                Txn.sender() == App.globalGet(self.Variables.owner),
+                App.globalGet(self.Variables.isforsale) == Int(1),
             ),
         )
 
@@ -103,7 +104,7 @@ class Card:
 
 
         return Seq([
-           If(self.Variables.isforsale == 0).Then(set_forsale).Else(set_notforsale),
+           If(App.globalGet(self.Variables.isforsale) == Int(0)).Then(set_forsale).Else(set_notforsale),
             Approve()
         ])
 
