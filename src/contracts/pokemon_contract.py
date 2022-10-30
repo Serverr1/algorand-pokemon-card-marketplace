@@ -72,6 +72,7 @@ class Card:
             And(
                     Txn.sender() == App.globalGet(self.Variables.owner),
                     Txn.application_args.length() == Int(2),
+                    Len(Txn.application_args[1]) == Int(56)
             ),
         ),
         return Seq([
