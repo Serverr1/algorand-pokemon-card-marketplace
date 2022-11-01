@@ -1,12 +1,11 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import Cover from "./components/Cover";
 import './App.css';
 import Wallet from "./components/Wallet";
-import {Container, Nav} from "react-bootstrap";
-import Cards from "./components/marketplace/Pictures";
-import {indexerClient, myAlgoConnect} from "./utils/constants";
-import {Notification} from "./components/utils/Notifications";
-import coverImg from "./assets/img/sandwich.jpg"
+import { Container, Nav } from "react-bootstrap";
+import Cards from "./components/marketplace/Cards";
+import { indexerClient, myAlgoConnect } from "./utils/constants";
+import { Notification } from "./components/utils/Notifications";
 
 const App = function AppWrapper() {
 
@@ -33,9 +32,9 @@ const App = function AppWrapper() {
                 setName(_account.name);
                 fetchBalance(_account.address);
             }).catch(error => {
-            console.log('Could not connect to MyAlgo wallet');
-            console.error(error);
-        })
+                console.log('Could not connect to MyAlgo wallet');
+                console.error(error);
+            })
     };
 
     const disconnect = () => {
@@ -46,7 +45,7 @@ const App = function AppWrapper() {
 
     return (
         <>
-            <Notification/>
+            <Notification />
             {address ? (
                 <Container fluid="md">
                     <Nav className="justify-content-end pt-3 pb-5">
@@ -61,11 +60,11 @@ const App = function AppWrapper() {
                         </Nav.Item>
                     </Nav>
                     <main>
-                        <Cards address={address} fetchBalance={fetchBalance}/>
+                        <Cards address={address} fetchBalance={fetchBalance} />
                     </main>
                 </Container>
             ) : (
-                <Cover name={"Pokemon card Marketplace"} coverImg={""} connect={connectWallet}/>
+                <Cover name={"Pokemon card Marketplace"} coverImg={""} connect={connectWallet} />
             )}
         </>
     );
