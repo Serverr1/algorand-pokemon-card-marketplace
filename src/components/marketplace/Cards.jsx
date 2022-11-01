@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {toast} from "react-toastify";
-import AddPicture from "./AddPicture";
+import AddPicture from "./AddPicture"; // unrelated import
 import Card from "./Card";
 import Loader from "../utils/Loader";
 import {NotificationError, NotificationSuccess} from "../utils/Notifications";

@@ -140,55 +140,52 @@ export const toggleSaleAction = async (senderAddress, card) => {
   };
   
 // RESUME SALE: Group transaction consisting of ApplicationCallTxn 
-export const transferownershipAction = async (senderAddress, card, address) => {
-    console.log("Transfering ownership sale...");
+// export const transferownershipAction = async (senderAddress, card, address) => {
+//     console.log("Transfering ownership sale...");
   
-    let params = await algodClient.getTransactionParams().do();
+//     let params = await algodClient.getTransactionParams().do();
   
-    // Build required app args as Uint8Array
-    let transferownershipArg = new TextEncoder().encode("transferownership");
-  
-    let appArgs = [transferownershipArg, address];
-  
-    // Create ApplicationCallTxn
-    let appCallTxn = algosdk.makeApplicationCallTxnFromObject({
-      from: senderAddress,
-      appIndex: card.appId,
-      onComplete: algosdk.OnApplicationComplete.NoOpOC,
-      suggestedParams: params,
-      appArgs: appArgs,
-    });
-  
-    let txnArray = [appCallTxn];
-  
-    // Create group transaction out of previously build transactions
-    let groupID = algosdk.computeGroupID(txnArray);
-    for (let i = 0; i < 1; i++) txnArray[i].group = groupID;
-  
-    // Sign & submit the group transaction
-    let signedTxn = await myAlgoConnect.signTransaction(
-      txnArray.map((txn) => txn.toByte())
-    );
-    console.log("Signed group transaction");
-    let tx = await algodClient
-      .sendRawTransaction(signedTxn.map((txn) => txn.blob))
-      .do();
-  
-    // Wait for group transaction to be confirmed
-    let confirmedTxn = await algosdk.waitForConfirmation(algodClient, tx.txId, 4);
-  
-    // Notify about completion
-    console.log(
-      "Group transaction " +
-        tx.txId +
-        " confirmed in round " +
-        confirmedTxn["confirmed-round"]
-    );
-  };
-  
+//     // Build required app args as Uint8Array
+//     let transferownershipArg = new TextEncoder().encode("transferownership");
 
-
-
+//     let appArgs = [transferownershipArg, address];
+  
+//     // Create ApplicationCallTxn
+//     let appCallTxn = algosdk.makeApplicationCallTxnFromObject({
+//       from: senderAddress,
+//       appIndex: card.appId,
+//       onComplete: algosdk.OnApplicationComplete.NoOpOC,
+//       suggestedParams: params,
+//       appArgs: appArgs,
+//     });
+  
+//     let txnArray = [appCallTxn];
+  
+//     // Create group transaction out of previously build transactions
+//     let groupID = algosdk.computeGroupID(txnArray);
+//     for (let i = 0; i < 1; i++) txnArray[i].group = groupID;
+  
+//     // Sign & submit the group transaction
+//     let signedTxn = await myAlgoConnect.signTransaction(
+//       txnArray.map((txn) => txn.toByte())
+//     );
+//     console.log("Signed group transaction");
+//     let tx = await algodClient
+//       .sendRawTransaction(signedTxn.map((txn) => txn.blob))
+//       .do();
+  
+//     // Wait for group transaction to be confirmed
+//     let confirmedTxn = await algosdk.waitForConfirmation(algodClient, tx.txId, 4);
+  
+//     // Notify about completion
+//     console.log(
+//       "Group transaction " +
+//         tx.txId +
+//         " confirmed in round " +
+//         confirmedTxn["confirmed-round"]
+//     );
+//   };
+  
 
 // BUY PRODUCT: Group transaction consisting of ApplicationCallTxn and PaymentTxn
 export const buyCardAction = async (senderAddress, card) => {
