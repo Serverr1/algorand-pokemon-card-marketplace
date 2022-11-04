@@ -65,7 +65,7 @@ const App = function AppWrapper() {
                     </main>
                 </Container>
             ) : (
-                <Cover name={"Pokemon card Marketplace"} coverImg={""} connect={connectWallet}/>
+                <Cover name={"Pokemon card Marketplace"} coverImg={"https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/640px-International_Pok%C3%A9mon_logo.svg.png"} connect={connectWallet}/>
             )}
         </>
     );
