@@ -3,10 +3,10 @@ import Cover from "./components/Cover";
 import './App.css';
 import Wallet from "./components/Wallet";
 import {Container, Nav} from "react-bootstrap";
-import Cards from "./components/marketplace/Pictures";
+import Cards from "./components/marketplace/Cards";
 import {indexerClient, myAlgoConnect} from "./utils/constants";
 import {Notification} from "./components/utils/Notifications";
-import coverImg from "./assets/img/sandwich.jpg"
+
 
 const App = function AppWrapper() {
 

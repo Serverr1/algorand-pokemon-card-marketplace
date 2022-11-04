@@ -15,15 +15,17 @@ import approvalProgram from "!!raw-loader!../contracts/pokemon_contract_approval
 import clearProgram from "!!raw-loader!../contracts/pokemon_contract_clear.teal";
 import {base64ToUTF8String, utf8ToBase64String} from "./conversions";
 
-class Card {
-    constructor(name, image, attributes, price, isforsale, appId, owner) {
+class CARD {
+    constructor(name, image, owner, attributes, price, isforsale, sold, appId) {
         this.name = name;
         this.image = image;
+        this.owner =  owner;
         this.attributes = attributes;
         this.price = price;
         this.isforsale = isforsale;
+        this.sold = sold;
         this.appId = appId;
-        this.owner = owner;
+        
     }
 }
 
@@ -51,6 +53,8 @@ export const createCardAction = async (senderAddress, card) => {
     let image = new TextEncoder().encode(card.image);
     let attributes = new TextEncoder().encode(card.attributes);
     let price = algosdk.encodeUint64(card.price);
+ 
+    
 
     let appArgs = [name, image, attributes, price]
 
@@ -139,16 +143,19 @@ export const toggleSaleAction = async (senderAddress, card) => {
     );
   };
   
-// RESUME SALE: Group transaction consisting of ApplicationCallTxn 
-export const transferownershipAction = async (senderAddress, card, address) => {
-    console.log("Transfering ownership sale...");
+// PRICE CHNGING: Group transaction consisting of ApplicationCallTxn 
+export const changepriceAction = async (senderAddress, card, newprice) => {
+    console.log("Changing the price of the pokemon...");
   
     let params = await algodClient.getTransactionParams().do();
   
     // Build required app args as Uint8Array
-    let transferownershipArg = new TextEncoder().encode("transferownership");
+    let changepriceArg = new TextEncoder().encode("changeprice");
+    let price = algosdk.encodeUint64(newprice);
+ 
+    
   
-    let appArgs = [transferownershipArg, address];
+    let appArgs = [changepriceArg, price ];
   
     // Create ApplicationCallTxn
     let appCallTxn = algosdk.makeApplicationCallTxnFromObject({
@@ -192,7 +199,7 @@ export const transferownershipAction = async (senderAddress, card, address) => {
 
 // BUY PRODUCT: Group transaction consisting of ApplicationCallTxn and PaymentTxn
 export const buyCardAction = async (senderAddress, card) => {
-    console.log("Buying picture...");
+    console.log("Buying Card...");
 
     let params = await algodClient.getTransactionParams().do();
 
@@ -267,7 +274,7 @@ export const deleteAction = async (senderAddress, index) => {
 }
 
 // GET PRODUCTS: Use indexer
-export const getCardAction = async () => {
+export const getCardsAction = async () => {
     console.log("Fetching pokemion cards...")
     let note = new TextEncoder().encode(pokemonNote);
     let encodedNote = Buffer.from(note).toString("base64");
@@ -304,12 +311,13 @@ const getApplication = async (appId) => {
         let globalState = response.application.params["global-state"]
 
         // 2. Parse fields of response and return product
-        let owner = response.application.params.creator
         let name = ""
         let image = ""
+        let owner = response.application.params.creator
         let attributes = ""
         let price = 0
         let isforsale = 1
+        let sold = 0
 
         const getField = (fieldName, globalState) => {
             return globalState.find(state => {
@@ -317,14 +325,26 @@ const getApplication = async (appId) => {
             })
         }
 
+        const getOwner = (fieldName, globalState) => {
+            return globalState.find(state => {
+                return state.key === algosdk.encodeAddress(fieldName);
+            })
+        }
+
+
+
+
         if (getField("NAME", globalState) !== undefined) {
             let field = getField("NAME", globalState).value.bytes
             name = base64ToUTF8String(field)
         }
-
         if (getField("IMAGE", globalState) !== undefined) {
             let field = getField("IMAGE", globalState).value.bytes
             image = base64ToUTF8String(field)
+        }
+
+        if (getOwner("OWNER", globalState) !== undefined) {
+            owner = getOwner("OWNER", globalState).value.bytes
         }
 
         if (getField("ATTRIBUTES", globalState) !== undefined) {
@@ -341,8 +361,12 @@ const getApplication = async (appId) => {
             isforsale = getField("ISFORSALE", globalState).value.uint
         }
 
+        if (getField("SOLD", globalState) !== undefined) {
+            sold = getField("SOLD", globalState).value.uint
+        }
 
-        return new Picture(name, image, attributes, price, isforsale, appId, owner)
+
+        return new CARD(name, image, owner, attributes, price, isforsale, sold, appId)
     } catch (err) {
         return null;
     }

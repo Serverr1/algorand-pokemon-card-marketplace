@@ -5,11 +5,11 @@ import {microAlgosToString, truncateAddress} from "../../utils/conversions";
 import Identicon from "../utils/Identicon";
 import {stringToMicroAlgos} from "../../utils/conversions";
 
-const Card = ({address, card, buyCard, deleteCard, transferOwnership, toggleSale}) => {
-    const {name, image, attributes, price, isforsale, appId, owner} = card;
+const CARD = ({address, card, buyCard, deleteCard, changePrice, toggleSale}) => {
+    const {name, image, owner, attributes, price, isforsale, sold, appId} = card;
 
 
-    const [newaddress, setNewAddress] = useState("");
+    const [newprice, setNewPrice] = useState(0);
    
 
     return (
@@ -20,6 +20,10 @@ const Card = ({address, card, buyCard, deleteCard, transferOwnership, toggleSale
                         <span className="font-monospace text-secondary">{truncateAddress(owner)}</span>
                         <Identicon size={28} address={owner}/>
                     </Stack>
+
+                    <Badge bg="secondary" className="ms-auto">
+                            {sold} Sold
+                        </Badge>
                 </Card.Header>
                 <div className="ratio ratio-4x3">
                     <img src={image} alt={name} style={{objectFit: "cover"}}/>
@@ -31,13 +35,14 @@ const Card = ({address, card, buyCard, deleteCard, transferOwnership, toggleSale
                        
                         {card.owner !== address && isforsale === 1 &&
                         <Button
-                            variant="outline-dark"
+                            variant="outline-info"
                             onClick={() => buyCard(card)}
                             className="w-75 py-3"
                         >
                             Buy for {microAlgosToString(price)} ALGO
                         </Button>
                         }
+
                         {card.owner === address &&
                             <Button
                                 variant="outline-danger"
@@ -69,24 +74,24 @@ const Card = ({address, card, buyCard, deleteCard, transferOwnership, toggleSale
 
                         <Form>
                             <FloatingLabel
-                            controlId="inputAddress"
-                            label="Receiver Address"
+                            controlId="inputPrice"
+                            label="Price in ALGO"
                             className="mb-3"
                         >
                             <Form.Control
-                                type="text"
+                                type="number"
+                                placeholder="Enter new price"
                                 onChange={(e) => {
-                                    setNewAddress(e.target.value);
+                                    setNewPrice(stringToMicroAlgos(e.target.value));
                                 }}
-                                placeholder="Enter Receiver Address"
                             />
                         </FloatingLabel>
                              <Button
-                                variant="outline-danger"
-                                onClick={() => transferOwnership(card, newaddress)}
+                                variant="info"
+                                onClick={() => changePrice(card, newprice)}
                                 className="btn"
                             >
-                              Transfer Card
+                             Change Price
                             </Button>
                         
 
@@ -103,13 +108,13 @@ const Card = ({address, card, buyCard, deleteCard, transferOwnership, toggleSale
     );
 };
 
-Card.propTypes = {
+CARD.propTypes = {
     address: PropTypes.string.isRequired,
     card: PropTypes.instanceOf(Object).isRequired,
     buyCard: PropTypes.func.isRequired,
-    transferOwnership: PropTypes.func.isRequired,
+    changePrice: PropTypes.func.isRequired,
     toggleSale: PropTypes.func.isRequired,
     deleteCard: PropTypes.func.isRequired
 };
 
-export default Card;
+export default CARD;

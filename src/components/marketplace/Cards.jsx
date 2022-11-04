@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from "react";
 import {toast} from "react-toastify";
-import AddPicture from "./AddPicture";
-import Card from "./Card";
+import AddCard from "./AddCard";
+import CARD from "./Card";
 import Loader from "../utils/Loader";
 import {NotificationError, NotificationSuccess} from "../utils/Notifications";
-import {buyCardAction, createCardAction, transferownershipAction, toggleSaleAction,  deleteAction, getCardAction,} from "../../utils/marketplace";
+import {buyCardAction, createCardAction, changepriceAction, toggleSaleAction,  deleteAction, getCardsAction,} from "../../utils/marketplace";
 import PropTypes from "prop-types";
 import {Row} from "react-bootstrap";
 
@@ -51,7 +51,7 @@ const Cards = ({address, fetchBalance}) => {
 
     const toggleSale = async (card) => {
         setLoading(true);
-        pausesaleAction(address, card)
+        toggleSaleAction(address, card)
             .then(() => {
                 toast(<NotificationSuccess text="Sale toggled successfully"/>);
                 getCards();
@@ -65,17 +65,17 @@ const Cards = ({address, fetchBalance}) => {
     };
 
 
-    const transferOwnership = async (card) => {
+    const changePrice = async (card, newprice) => {
         setLoading(true);
-        transferownershipAction(address, card)
+        changepriceAction(address, card, newprice)
             .then(() => {
-                toast(<NotificationSuccess text="Ownership transfered successfully"/>);
+                toast(<NotificationSuccess text="Price changed successfully"/>);
                 getCards();
                 fetchBalance(address);
             })
             .catch(error => {
                 console.log(error)
-                toast(<NotificationError text="Ownership not transfered successfully"/>);
+                toast(<NotificationError text="Failed to change price "/>);
                 setLoading(false);
             })
     };
@@ -125,12 +125,12 @@ const Cards = ({address, fetchBalance}) => {
             <Row xs={1} sm={2} lg={3} className="g-3 mb-5 g-xl-4 g-xxl-5">
                 <>
                     {cards.map((data, index) => (
-                        <Card
+                        <CARD
                             address={address}
                             card={data}
                             buyCard={buyCard}
                             toggleSale = {toggleSale}
-                            transferOwnership = {transferOwnership}
+                            changePrice = {changePrice}
                             deleteCard={deleteCard}
                             key={index}
                         />

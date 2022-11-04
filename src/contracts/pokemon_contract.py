@@ -9,11 +9,12 @@ class Card:
         attributes = Bytes("ATTRIBUTES") 
         price = Bytes("PRICE")
         isforsale = Bytes("ISFORSALE")
+        sold = Bytes("SOLD")
         
 
     class AppMethods:
         buy = Bytes("buy")
-        transferownership = Bytes("transferownership")
+        changeprice = Bytes("changeprice")
         togglesale = Bytes("togglesale")
        
 
@@ -24,7 +25,7 @@ class Card:
             Assert(
                 And(
                     Txn.application_args.length() == Int(4),
-                    Txn.note() == Bytes("pokemon:uv1"),
+                    Txn.note() == Bytes("pokemon:uv0.5"),
                     Len(Txn.application_args[0]) > Int(0),
                     Len(Txn.application_args[1]) > Int(0),
                     Len(Txn.application_args[2]) > Int(0),
@@ -39,6 +40,7 @@ class Card:
             App.globalPut(self.Variables.price, Btoi(Txn.application_args[3])),
             App.globalPut(self.Variables.isforsale, Int(1)),
             App.globalPut(self.Variables.owner, Txn.sender()),
+            App.globalPut(self.Variables.sold, Int(0)),
             Approve(),
         ])
 
@@ -57,8 +59,7 @@ class Card:
             can_buy = And(App.globalGet(self.Variables.isforsale) == Int(1),valid_number_of_transactions,valid_payment_to_seller)
 
             update_state = Seq([
-                App.globalPut(self.Variables.owner, Txn.sender()),
-                App.globalPut(self.Variables.isforsale, Int(0)),
+                App.globalPut(self.Variables.sold, App.globalGet(self.Variables.sold) + Int(1)),
                 Approve()
             ])
 
@@ -66,18 +67,17 @@ class Card:
 
     
 
-    # transferring of ownership
-    def transferownership(self):
+    # changing the price
+    def changeprice(self):
         Assert(
             And(
                     Txn.sender() == App.globalGet(self.Variables.owner),
                     Txn.application_args.length() == Int(2),
-                    Len(Txn.application_args[1]) == Int(58)
+                    Btoi(Txn.application_args[1]) > Int(0),
             ),
         ),
         return Seq([
-            App.globalPut(self.Variables.owner, Txn.application_args[1]),
-            If(App.globalGet(self.Variables.isforsale) == Int(1)).Then(App.globalPut(self.Variables.isforsale, Int(0))),
+            App.globalPut(self.Variables.price, Btoi(Txn.application_args[1])),
             Approve()
         ])
 
@@ -112,7 +112,7 @@ class Card:
 
     # delete a pokemon card .
     def application_deletion(self):
-        return Return(Txn.sender() == Global.creator_address())
+        return Return(Txn.sender() == App.globalGet(self.Variables.owner))
 
     # Check transaction conditions
     def application_start(self):
@@ -123,7 +123,7 @@ class Card:
              self.application_deletion()],
             # if the first argument of the transaction matches the AppMethods.buy value, the buy() method is called.
             [Txn.application_args[0] == self.AppMethods.buy, self.buy()],
-            [Txn.application_args[0] == self.AppMethods.transferownership, self.transferownership()],
+            [Txn.application_args[0] == self.AppMethods.changeprice, self.changeprice()],
             [Txn.application_args[0] == self.AppMethods.togglesale, self.togglesale()],
         )
 
